@@ -4,7 +4,7 @@
 
 #include "atom/common/platform_util.h"
 
-#include <Carbon/Carbon.h>
+// #import <CoreServices/CoreServices.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/cancelable_callback.h"
@@ -34,6 +34,17 @@ bool ShowItemInFolder(const base::FilePath& path) {
   return true;
 }
 
+typedef bool(^OpenItemBlock)(const base::FilePath& full_path);
+
+OSStatus sendAppleEvent(AppleEvent *theEvent) {
+  // Send the actual event.  Do not care about the reply.
+  base::mac::ScopedAEDesc<AppleEvent> reply;
+  return AESendMessage(theEvent,  // theAppleEvent
+                       reply.OutPointer(),  // reply
+                       kAENoReply + kAEAlwaysInteract,  // sendMode
+                       kAEDefaultTimeout); // timeOutInTicks
+}
+
 // This function opens a file.  This doesn't use LaunchServices or NSWorkspace
 // because of two bugs:
 //  1. Incorrect app activation with com.apple.quarantine:
@@ -41,7 +52,7 @@ bool ShowItemInFolder(const base::FilePath& path) {
 //  2. Silent no-op for unassociated file types: http://crbug.com/50263
 // Instead, an AppleEvent is constructed to tell the Finder to open the
 // document.
-bool OpenItem(const base::FilePath& full_path) {
+bool OpenItem(const base::FilePath& full_path, OpenItemBlock open) {
   DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string)
@@ -113,20 +124,17 @@ bool OpenItem(const base::FilePath& full_path) {
     return false;
   }
 
-  // Send the actual event.  Do not care about the reply.
-  base::mac::ScopedAEDesc<AppleEvent> reply;
-  status = AESend(theEvent,  // theAppleEvent
-                  reply.OutPointer(),  // reply
-                  kAENoReply + kAEAlwaysInteract,  // sendMode
-                  kAENormalPriority,  // sendPriority
-                  kAEDefaultTimeout,  // timeOutInTicks
-                  NULL, // idleProc
-                  NULL);  // filterProc
+  // Send the actual event.
+  status = sendAppleEvent(theEvent.OutPointer());
   if (status != noErr) {
     OSSTATUS_LOG(WARNING, status)
         << "Could not send AE to Finder in OpenItem()";
   }
   return status == noErr;
+}
+
+bool OpenItem(const base::FilePath& full_path, const OpenItemCallback& callback) {
+  return false;
 }
 
 bool openURLInWorkspace(NSURL* ns_url, NSUInteger launchOptions) {

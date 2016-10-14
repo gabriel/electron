@@ -27,8 +27,11 @@ Show the given file in a file manager. If possible, select the file.
 ### `shell.openItem(fullPath)`
 
 * `fullPath` String
+* `callback` Function (optional) - If specified will perform the open asynchronously. _macOS_
+  * `opened` Boolean
 
 Returns `Boolean` - Whether the item was successfully opened.
+If callback is specified, it will return whether it was able to initiate the open call.
 
 Open the given file in the desktop's default manner.
 

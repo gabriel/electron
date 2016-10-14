@@ -24,9 +24,12 @@ namespace platform_util {
 // Must be called from the UI thread.
 bool ShowItemInFolder(const base::FilePath& full_path);
 
+typedef base::Callback<void(bool opened)> OpenItemCallback;
+
 // Open the given file in the desktop's default manner.
 // Must be called from the UI thread.
 bool OpenItem(const base::FilePath& full_path);
+bool OpenItem(const base::FilePath& full_path, const OpenItemCallback& callback);
 
 typedef base::Callback<void(bool opened)> OpenExternalCallback;
 

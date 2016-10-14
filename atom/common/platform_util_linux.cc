@@ -79,6 +79,10 @@ bool OpenItem(const base::FilePath& full_path) {
   return XDGOpen(full_path.value(), true);
 }
 
+bool OpenItem(const base::FilePath& full_path, const OpenItemCallback& callback) {
+  return false;
+}
+
 bool OpenExternal(const GURL& url, bool activate) {
   // Don't wait for exit, since we don't want to wait for the browser/email
   // client window to close before returning

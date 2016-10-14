@@ -299,6 +299,10 @@ bool OpenItem(const base::FilePath& full_path) {
     return ui::win::OpenFileViaShell(full_path);
 }
 
+bool OpenItem(const base::FilePath& full_path, const OpenItemCallback& callback) {
+  return false;
+}
+
 bool OpenExternal(const base::string16& url, bool activate) {
   // Quote the input scheme to be sure that the command does not have
   // parameters unexpected by the external program. This url should already

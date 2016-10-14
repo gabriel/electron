@@ -42,9 +42,21 @@ struct Converter<base::win::ShortcutOperation> {
 
 namespace {
 
+bool OpenItem(const base::FilePath& full_path, mate::Arguments* args) {
+  if (args->Length() >= 2) {
+    v8::Local<v8::Value> peek = args->PeekNext();
+    platform_util::OpenItemCallback callback;
+    if (mate::Converter<platform_util::OpenItemCallback>::FromV8(
+      args->isolate(), peek, &callback)) {
+      return platform_util::OpenItem(full_path, callback);
+    }
+  }
+  return platform_util::OpenItem(full_path);
+}
+
 bool OpenExternal(
 #if defined(OS_WIN)
-    const base::string16& url,
+    const base::string16& full_path,
 #else
     const GURL& url,
 #endif
@@ -129,7 +141,7 @@ void Initialize(v8::Local<v8::Object> exports, v8::Local<v8::Value> unused,
                 v8::Local<v8::Context> context, void* priv) {
   mate::Dictionary dict(context->GetIsolate(), exports);
   dict.SetMethod("showItemInFolder", &platform_util::ShowItemInFolder);
-  dict.SetMethod("openItem", &platform_util::OpenItem);
+  dict.SetMethod("openItem", &OpenItem);
   dict.SetMethod("openExternal", &OpenExternal);
   dict.SetMethod("moveItemToTrash", &platform_util::MoveItemToTrash);
   dict.SetMethod("beep", &platform_util::Beep);
