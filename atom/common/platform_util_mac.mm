@@ -37,10 +37,8 @@ bool ShowItemInFolder(const base::FilePath& path) {
 typedef bool(^OpenItemBlock)(const base::FilePath& full_path);
 
 OSStatus sendAppleEvent(AppleEvent *theEvent) {
-  // Send the actual event.  Do not care about the reply.
-  base::mac::ScopedAEDesc<AppleEvent> reply;
   return AESendMessage(theEvent,  // theAppleEvent
-                       reply.OutPointer(),  // reply
+                       kAENoReply,  // reply
                        kAENoReply + kAEAlwaysInteract,  // sendMode
                        kAEDefaultTimeout); // timeOutInTicks
 }
